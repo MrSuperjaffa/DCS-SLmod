@@ -472,7 +472,9 @@ function slmodCall.onPlayerConnect(id)
  
 		slmod.pingCheck.addClient(id)
     end
-    slmod.info('num clients: '.. slmod.num_clients)
+	slmod.info('num clients: '.. slmod.num_clients)
+	slmod.info('max clients: '.. slmod.config.max_clients)
+	slmod.info('reserve slots:'.. slmod.config.reserve_slots)
 	return --slmod.func_old.on_connect(id)
 end 
 
@@ -490,6 +492,19 @@ function slmodCall.onPlayerTryConnect(addr, name, ucid)
 		return false, "You are banned from this server."
 	end
 	
+	if slmod.config.enable_playercap == true then
+		if slmod.num_clients >= slmod.config.max_clients then
+			if slmod.isAdmin(ucid) then
+				slmod.info('Max clients reached, but client is admin. Continuing...')
+			else
+				slmod.info('Max clients reached. Kicking client...')
+				return false, 'Max clients reached: ' .. slmod.num_clients .. '/' .. slmod.config.max_clients .. ' + ' .. slmod.config.reserve_slots .. ' clients'
+			end
+		else
+			slmod.info('Space availabe. Letting client in...')
+		end
+	end
+
 	local allow, score = slmod.autoAdminOnConnect(ucid)
 
     if allow == false  then
